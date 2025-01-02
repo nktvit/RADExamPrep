@@ -1,4 +1,3 @@
-using ClassLibrary.DTOs.Booking;
 using ClassLibrary.DTOs.Flight;
 using ClassLibrary.DTOs.Passenger;
 using ClassLibrary.Models;
@@ -15,22 +14,6 @@ public class FlightService
         _context = context;
     }
 
-    public async Task<Flight> CreateFlight(FlightDetailsDTO flightDto)
-    {
-        var flight = new Flight
-        {
-            FlightNumber = flightDto.FlightNumber,
-            DepartureDate = flightDto.DepartureDate,
-            Origin = flightDto.Origin,
-            Destination = flightDto.Destination,
-            Country = flightDto.Country,
-            MaxSeats = flightDto.MaxSeats
-        };
-
-        _context.Flights.Add(flight);
-        await _context.SaveChangesAsync();
-        return flight;
-    }
 
     public async Task<Flight?> GetFlight(int id)
     {
@@ -121,6 +104,13 @@ public class FlightService
             .ToListAsync();
     }
 
+    public async Task<decimal> GetTotalSpent(int passengerId)
+    {
+        return await _context.PassengerBookings
+            .Where(pb => pb.PassengerID == passengerId)
+            .SumAsync(pb => pb.TicketCost + pb.BaggageCharge);
+    }
+
     public async Task<bool> HasAvailableSeats(int flightId)
     {
         var flight = await _context.Flights
@@ -129,72 +119,5 @@ public class FlightService
 
         return flight != null &&
                flight.PassengerBookings.Count < flight.MaxSeats;
-    }
-
-    public async Task<bool> UpdateFlight(int id, FlightDetailsDTO flightDto)
-    {
-        var flight = await _context.Flights.FindAsync(id);
-
-        if (flight == null) return false;
-
-        flight.FlightNumber = flightDto.FlightNumber;
-        flight.DepartureDate = flightDto.DepartureDate;
-        flight.Origin = flightDto.Origin;
-        flight.Destination = flightDto.Destination;
-        flight.Country = flightDto.Country;
-        flight.MaxSeats = flightDto.MaxSeats;
-
-        try
-        {
-            await _context.SaveChangesAsync();
-            return true;
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            return false;
-        }
-    }
-
-    public async Task<bool> DeleteFlight(int id)
-    {
-        var flight = await _context.Flights
-            .Include(f => f.PassengerBookings)
-            .FirstOrDefaultAsync(f => f.FlightID == id);
-
-        if (flight == null) return false;
-
-        if (flight.PassengerBookings.Any())
-        {
-            return false;
-        }
-
-        _context.Flights.Remove(flight);
-        await _context.SaveChangesAsync();
-        return true;
-    }
-
-    public async Task<bool> AddPassengerToFlight(int flightId, BookingDTO bookingDto)
-    {
-        var flight = await _context.Flights
-            .Include(f => f.PassengerBookings)
-            .FirstOrDefaultAsync(f => f.FlightID == flightId);
-
-        if (flight == null || flight.PassengerBookings.Count >= flight.MaxSeats)
-        {
-            return false;
-        }
-
-        var booking = new PassengerBooking
-        {
-            PassengerID = bookingDto.PassengerID,
-            FlightID = flightId,
-            TicketType = bookingDto.TicketType,
-            TicketCost = bookingDto.TicketCost,
-            BaggageCharge = bookingDto.BaggageCharge
-        };
-
-        _context.PassengerBookings.Add(booking);
-        await _context.SaveChangesAsync();
-        return true;
     }
 }

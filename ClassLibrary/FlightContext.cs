@@ -8,7 +8,7 @@ namespace ClassLibrary;
 public class FlightContext : DbContext
 {
     public DbSet<Flight?> Flights { get; set; }
-    public DbSet<Passenger?> Passengers { get; set; }
+    public DbSet<Passenger> Passengers { get; set; }
     public DbSet<PassengerBooking> PassengerBookings { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
