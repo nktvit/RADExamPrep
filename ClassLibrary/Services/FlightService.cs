@@ -12,29 +12,50 @@ public class FlightService
         _context = context;
     }
 
-    public async Task<IEnumerable<dynamic>> GetPassengersForFlight(int flightId)
+    public class PassengerDetailsDTO
     {
-        return await _context.PassengerBookings
+        public string PassengerName { get; set; }
+        public string TicketType { get; set; }
+        public string Destination { get; set; }
+    }
+    public class FlightRevenueDTO
+    {
+        public string FlightNumber { get; set; }
+        public string Destination { get; set; }
+        public DateTime DepartureDate { get; set; }
+        public decimal Revenue { get; set; }
+    }
+
+    public async Task<IEnumerable<PassengerDetailsDTO>> GetPassengersForFlight(int flightId)
+    {
+        var passengers = await _context.PassengerBookings
+            .Include(pb => pb.Passenger)
+            .Include(pb => pb.Flight)
             .Where(pb => pb.FlightID == flightId)
-            .Select(pb => new
+            .Select(pb => new PassengerDetailsDTO
             {
                 PassengerName = pb.Passenger.Name,
-                TicketType = pb.TicketType,
+                TicketType = pb.TicketType.ToString(),
                 Destination = pb.Flight.Destination
             })
             .ToListAsync();
+
+        return passengers;
     }
 
-    public async Task<IEnumerable<dynamic>> GetFlightRevenues()
+    public async Task<IEnumerable<FlightRevenueDTO>> GetFlightRevenues()
     {
-        return await _context.Flights
-            .Select(f => new
-            {
-                FlightNumber = f.FlightNumber,
-                Destination = f.Destination,
-                DepartureDate = f.DepartureDate,
-                Revenue = f.PassengerBookings.Sum(pb => pb.TicketCost + pb.BaggageCharge)
-            })
-            .ToListAsync();
+        var flights = await _context.Flights.ToListAsync();
+        var bookings = await _context.PassengerBookings.ToListAsync();
+
+        return flights.Select(f => new FlightRevenueDTO
+        {
+            FlightNumber = f.FlightNumber,
+            Destination = f.Destination,
+            DepartureDate = f.DepartureDate,
+            Revenue = bookings
+                .Where(b => b.FlightID == f.FlightID)
+                .Sum(b => b.TicketCost + b.BaggageCharge)
+        });
     }
 }

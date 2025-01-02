@@ -15,7 +15,7 @@ public class FlightQueries
         flightService = new FlightService(context);
     }
 
-    public async void list_passengers(int FlightID)
+    public async Task list_passengers(int FlightID)
     {
         var passengers = await flightService.GetPassengersForFlight(FlightID);
 
@@ -34,10 +34,9 @@ public class FlightQueries
         table.Write(Format.Alternative);
     }
 
-    public async void list_flight_revenue()
+    public async Task list_flight_revenue()
     {
         var revenues = await flightService.GetFlightRevenues();
-
         var table = new ConsoleTable("Flight", "Destination", "Departure", "Revenue");
 
         foreach (var revenue in revenues)
