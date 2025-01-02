@@ -3,3 +3,11 @@ Don't forget to install all the deps to make this shitty db work
 
 Microsoft.EntityFrameworkCore.SQLite
 Microsoft.EntityFrameworkCore.Tools
+
+
+Just to make it clear, class library is the place
+where you put all the data access logic, so you can use
+it in other projects via services like shown in FlightService.cs
+
+DTO(Data Transfer Object) is a class that is used to encapsulate data
+for transfer between layers of an application.
