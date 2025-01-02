@@ -15,7 +15,11 @@ public class FlightContext : DbContext
     {
         if (!options.IsConfigured)
         {
-            options.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=FlightDB;Trusted_Connection=True;");
+            var folder = Environment.SpecialFolder.LocalApplicationData;
+            var path = Environment.GetFolderPath(folder);
+            var dbPath = Path.Join(path, "flightDB.db");
+
+            options.UseSqlite($"Data Source={dbPath}");
         }
     }
 
@@ -37,8 +41,16 @@ public class FlightContext : DbContext
 
         // Seed Data
         modelBuilder.Entity<Flight>().HasData(
-            new Flight { FlightID = 1, FlightNumber = "IT-001", DepartureDate = DateTime.Parse("2025-01-12T22:00:00"), Origin = "Dublin", Destination = "Rome", Country = "Italy", MaxSeats = 110 },
-            new Flight { FlightID = 2, FlightNumber = "EN-002", DepartureDate = DateTime.Parse("2025-01-12T22:00:00"), Origin = "Dublin", Destination = "London", Country = "England", MaxSeats = 110 }
+            new Flight
+            {
+                FlightID = 1, FlightNumber = "IT-001", DepartureDate = DateTime.Parse("2025-01-12T22:00:00"),
+                Origin = "Dublin", Destination = "Rome", Country = "Italy", MaxSeats = 110
+            },
+            new Flight
+            {
+                FlightID = 2, FlightNumber = "EN-002", DepartureDate = DateTime.Parse("2025-01-12T22:00:00"),
+                Origin = "Dublin", Destination = "London", Country = "England", MaxSeats = 110
+            }
         );
 
         modelBuilder.Entity<Passenger>().HasData(
@@ -46,7 +58,11 @@ public class FlightContext : DbContext
         );
 
         modelBuilder.Entity<PassengerBooking>().HasData(
-            new PassengerBooking { PassengerBookingID = 1, PassengerID = 1, FlightID = 1, TicketType = TicketType.Economy, TicketCost = 51.83m, BaggageCharge = 30m }
+            new PassengerBooking
+            {
+                PassengerBookingID = 1, PassengerID = 1, FlightID = 1, TicketType = TicketType.Economy,
+                TicketCost = 51.83m, BaggageCharge = 30m
+            }
         );
     }
 }
