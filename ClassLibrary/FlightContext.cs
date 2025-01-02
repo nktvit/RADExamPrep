@@ -7,6 +7,11 @@ namespace ClassLibrary;
 
 public class FlightContext : DbContext
 {
+    public FlightContext(DbContextOptions<FlightContext> options)
+    : base(options)
+    {
+    }
+
     public DbSet<Flight?> Flights { get; set; }
     public DbSet<Passenger> Passengers { get; set; }
     public DbSet<PassengerBooking> PassengerBookings { get; set; }

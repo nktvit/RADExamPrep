@@ -1,3 +1,6 @@
+using ClassLibrary;
+using Microsoft.EntityFrameworkCore;
+
 namespace MVC_Web_Application;
 
 public class Program
@@ -6,8 +9,16 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Add services to the container.
+        // Add services to the container
         builder.Services.AddControllersWithViews();
+
+        var folder = Environment.SpecialFolder.LocalApplicationData;
+        var path = Environment.GetFolderPath(folder);
+        var dbPath = Path.Join(path, "flightDB.db");
+
+        // Register FlightContext with dependency injection
+        builder.Services.AddDbContext<FlightContext>(options =>
+            options.UseSqlite($"Data Source={dbPath}"));
 
         var app = builder.Build();
 
